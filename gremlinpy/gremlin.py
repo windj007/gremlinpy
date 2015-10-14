@@ -341,13 +341,12 @@ class Function(Token):
                 self.apply_statment(bound)
 
                 params.append(str(bound))
-            elif type(bound) is Gremlin:
+            elif issubclass(type(bound), Gremlin):
                 bound.set_parent_gremlin(self.gremlin)
-
+                
                 params.append(str(bound))
             else:
-                params.append(self.gremlin.bind_param(bound)[0])
-
+                params.append(str(bound))
         return '%s(%s)' % (self.value, ', '.join(params))
 
 

@@ -452,10 +452,12 @@ class GremlinInjectionTests(unittest.TestCase):
         self.assertTrue(expected == string)
         self.assertTrue(len(params) == 0)
     
-    def test_can_nest_double_nest_gremlin_with_args(self):
-        g = Gremlin()
-        n = Gremlin()
-          
+    def test_can_nest_double_nest_gremlin_subclass_with_args(self):
+        class ExtGremlin(Gremlin):
+            pass
+        g = ExtGremlin()
+        n = ExtGremlin()
+
         g.V().has('project', 'project_id', 1).addEdge('subjects', n.V(123).next())
         
         string   = str(g)
