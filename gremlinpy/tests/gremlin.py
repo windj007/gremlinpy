@@ -451,7 +451,24 @@ class GremlinInjectionTests(unittest.TestCase):
           
         self.assertTrue(expected == string)
         self.assertTrue(len(params) == 0)
+    
+    def test_can_nest_double_nest_gremlin_with_args(self):
+        g = Gremlin()
+        n = Gremlin()
           
+        g.V().has('project', 'project_id', 1).addEdge('subjects', n.V(123).next())
+        
+        string   = str(g)
+        params   = g.bound_params
+        expected = 'g.V().has(%s, %s, %s).addEdge(%s, g.V(%s).next())' % (get_dict_key(params, 'project'),
+                                                                          get_dict_key(params, 'project_id'),
+                                                                          get_dict_key(params, 1),
+                                                                          get_dict_key(params, 'subjects'),
+                                                                          get_dict_key(params, 123))
+
+        self.assertTrue(expected == string)
+        self.assertTrue(len(params) == 5)
+              
     def test_can_nest_with_bound_params(self):
         g = Gremlin()
         d = {'name': 'parent'}
