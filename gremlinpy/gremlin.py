@@ -276,7 +276,7 @@ class _Tokenable(object):
         elif issubclass(type(value), Statement): 
             self.apply_statment(value)
             return value
-        elif isinstance(value, Gremlin):
+        elif issubclass(type(value), Gremlin):
             value.set_parent_gremlin(self.gremlin)
             return value
         elif can_bind and not getattr(self, 'gremlin', None) is None and isinstance(value, (int, str, unicode, float, bool)):
