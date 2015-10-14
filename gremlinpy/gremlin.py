@@ -121,24 +121,26 @@ class Gremlin(LinkList):
         return self.remove_token(self.bottom).add_token(func)
 
     def __getitem__(self, val):
-        val = val if type(val) is list or type(val) is tuple else [val]
+        if not isinstance(val, slice):
+            val = val if type(val) is list or type(val) is tuple else [val]
+    
+            try:
+                start = val[0]
+            except Exception as e:
+                start = None
+    
+            try:
+                end = val[1]
+            except Exception as e:
+                end = None
+    
+            try:
+                step = val[2]
+            except Exception as e:
+                step = None
 
-        try:
-            start = val[0]
-        except Exception as e:
-            start = None
+            val = slice(start, end, step)
 
-        try:
-            end = val[1]
-        except Exception as e:
-            end = None
-
-        try:
-            step = val[2]
-        except Exception as e:
-            step = None
-
-        val = slice(start, end, step)
         index = Index(self, val)
 
         return self.add_token(index)
@@ -264,21 +266,21 @@ class _Tokenable(object):
 
         return statement
 
-    def fix_value(self, value):
+    def fix_value(self, value, can_bind = False):
         if isinstance(value, Predicate):
             value.gremlin = Gremlin(self.gremlin.gv)
-            
+            return value
         elif isinstance(value, (list, tuple)):
-            value = [str(self.fix_value(a)) for a in value]
-
-            return value if isinstance(value, list) else tuple(value)
+            value = [self.fix_value(a, can_bind = can_bind) for a in value]
+            return value
         elif issubclass(type(value), Statement): 
             self.apply_statment(value)
-            return str(value)
+            return value
         elif isinstance(value, Gremlin):
             value.set_parent_gremlin(self.gremlin)
-
-            return str(value)
+            return value
+        elif can_bind and not getattr(self, 'gremlin', None) is None and isinstance(value, (int, str, unicode, float, bool)):
+            return self.gremlin.bind_param(value)[0]
         else:
             return value
 
@@ -288,6 +290,7 @@ class Token(Link, _Tokenable):
     value = None
     args = []
     concat = ''
+    can_bind = False
 
     def __init__(self, gremlin, value, args=None):
         self.gremlin = gremlin
@@ -296,7 +299,7 @@ class Token(Link, _Tokenable):
         if args is None:
             args = ()
 
-        self.args = self.fix_value(tuple(args))
+        self.args = self.fix_value(tuple(args), can_bind = self.can_bind)
 
 
 class GraphVariable(Token):
@@ -325,6 +328,7 @@ class Function(Token):
         g.functionName('not_bound', value1, value2, ...)
     """
     concat = '.'
+    can_bind = True 
 
     def __unicode__(self):
         params = []
@@ -353,6 +357,7 @@ class FunctionRaw(Function):
 
 class UnboudFunction(Token):
     concat = '.'
+    can_bind = False
 
     def __unicode__(self):
         return '%s(%s)' % (self.value, ', '.join(self.args))

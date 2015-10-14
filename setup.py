@@ -16,6 +16,7 @@ setup(
     url              = 'https://github.com/emehrkay/gremlinpy',
     author           = 'Mark Henderson',
     author_email     = 'emehrkay@gmail.com',
+    test_suite = "gremlinpy.tests.gremlin",
     long_description = __doc__,
     classifiers      = [
         'License :: OSI Approved :: MIT License',
