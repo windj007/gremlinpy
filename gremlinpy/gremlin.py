@@ -347,7 +347,7 @@ class Function(Token):
                 params.append(str(bound))
             else:
                 params.append(str(bound))
-        return '%s(%s)' % (self.value, ', '.join(params))
+        return '%s(%s)' % (self.value, ', '.join(map(str, params)))
 
 
 class FunctionRaw(Function):
